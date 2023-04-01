@@ -11,13 +11,15 @@ const server = z.object({
     process.env.NODE_ENV === "production"
       ? z.string().min(1)
       : z.string().min(1).optional(),
-  NEXTAUTH_URL: z.preprocess(
-    // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
-    // Since NextAuth.js automatically uses the VERCEL_URL if present.
-    (str) => process.env.VERCEL_URL ?? str,
-    // VERCEL_URL doesn't include `https` so it cant be validated as a URL
-    process.env.VERCEL ? z.string().min(1) : z.string().url()
-  ),
+  NEXTAUTH_URL: z
+    .preprocess(
+      (str) => "https://" + process.env.RAILWAY_STATIC_URL ?? str,
+      z.string().url()
+    )
+    .transform((x) => {
+      process.env.NEXTAUTH_URL = x;
+      return x;
+    }),
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   // DISCORD_CLIENT_ID: z.string(),
   // DISCORD_CLIENT_SECRET: z.string(),
@@ -38,7 +40,7 @@ const client = z.object({
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
 const processEnv = {
-  MYSQL_URL: process.env.DATABASE_URL,
+  MYSQL_URL: process.env.MYSQL_URL,
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
