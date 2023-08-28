@@ -13,7 +13,7 @@ const server = z.object({
       : z.string().min(1).optional(),
   NEXTAUTH_URL: z
     .preprocess(
-      (str) => "https://" + process.env.RAILWAY_STATIC_URL ?? str,
+      (str) => (process.env.RAILWAY_STATIC_URL ? "https://" + process.env.RAILWAY_STATIC_URL : str),
       z.string().url()
     )
     .transform((x) => {
